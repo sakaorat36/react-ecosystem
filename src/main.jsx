@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { useNavigate, Link } from "react-router-dom";
+import { Navigate, useNavigate, Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import axios from "axios";
 import "./index.css";
 
@@ -22,6 +23,7 @@ function HomePage() {
   };
 
   const handleNavigate = (userId) => {
+    console.log(userId);
     if (userId == 1) navigate("/profile");
     else navigate(`/profile/${userId}`);
   };
@@ -48,10 +50,38 @@ function ProfilePage() {
   return <div className="App">Profile Page</div>;
 }
 function FriendPage() {
-  return <div className="App">Friend Page</div>;
+  const { userId } = useParams();
+  console.log(userId);
+  const [friend, setFriend] = useState(null);
+
+  const fetchFriendDetail = async () => {
+    try {
+      const { data } = await axios.get(`/users/${userId}`);
+      console.log(data);
+      setFriend(data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  useEffect(() => {
+    fetchFriendDetail();
+  }, []);
+  return (
+    <div className="App">
+      {friend && (
+        <div className="friend">
+          <h3>{friend.name}</h3>
+        </div>
+      )}
+    </div>
+  );
 }
 function FeedPage() {
   return <div className="App">Feed Page</div>;
+}
+
+function NotFoundPage() {
+  return <div className="App">404 : Not Found</div>;
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(
@@ -63,9 +93,12 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <Routes>
       <Route path="/" element={<HomePage />} />
       <Route path="/profile" element={<ProfilePage />} />
-      <Route path="/profile/:id" element={<FriendPage />} />
+      <Route path="/profile/:userId" element={<FriendPage />} />
       <Route path="/feed" element={<FeedPage />} />
+      {/* <Route path="*" element={<NotFoundPage />} /> */}
+      <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   </BrowserRouter>
 );
 // npm i react-router-dom
+// npm i axios
